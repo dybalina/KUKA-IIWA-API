@@ -53,7 +53,8 @@ class iiwa_socket:
         self.JointVelocity = (None,None)
         self.JointJerk = (None,None)
         self.isready = False
-        
+        self.Id = None
+
 
         try:
             # Starting connection thread
@@ -113,6 +114,10 @@ class iiwa_socket:
                 for pack in data.split(">"):  # parsing data pack
                     cmd_splt = pack.split()
 
+                    if len(pack) and cmd_splt[0]=='Id':  # If it's JointPosition
+                        tmp = [float(''.join([c for c in s if c in '0123456789.eE-'])) for s in cmd_splt[1:]]
+                        if len(tmp)==1: self.Id = (tmp, last_read_time)
+
                     if len(pack) and cmd_splt[0]=='Joint_Pos':  # If it's JointPosition
                         tmp = [float(''.join([c for c in s if c in '0123456789.eE-'])) for s in cmd_splt[1:]]
                         if len(tmp)==7: self.JointPosition = (tmp, last_read_time)
@@ -124,7 +129,7 @@ class iiwa_socket:
                     if len(pack) and cmd_splt[0]=='Tool_Force':  # If it's ToolForce
                         tmp = [float(''.join([c for c in s if c in '0123456789.eE-'])) for s in cmd_splt[1:]]
                         if len(tmp)==3: self.ToolForce = (tmp, last_read_time)
-                        
+
                     if len(pack) and cmd_splt[0]=='Tool_Torque':  # If it's ToolTorque
                         tmp = [float(''.join([c for c in s if c in '0123456789.eE-'])) for s in cmd_splt[1:]]
                         if len(tmp)==3: self.ToolTorque = (tmp, last_read_time)
@@ -132,31 +137,31 @@ class iiwa_socket:
                     if len(pack) and cmd_splt[0]=='isCompliance':  # If isCompliance
                         if cmd_splt[1] == "false": self.isCompliance = (False, last_read_time)
                         elif cmd_splt[1] == "true": self.isCompliance = (True, last_read_time)
-                        
+
                     if len(pack) and cmd_splt[0]=='isCollision':  # If isCollision
                         if cmd_splt[1] == "false": self.isCollision = (False, last_read_time)
                         elif cmd_splt[1] == "true": self.isCollision = (True, last_read_time)
-                    
+
                     if len(pack) and cmd_splt[0]=='isReadyToMove':  # If isReadyToMove
                         if cmd_splt[1] == "false": self.isReadyToMove = (False, last_read_time)
                         elif cmd_splt[1] == "true": self.isReadyToMove = (True, last_read_time)
-                        
+
                     if len(pack) and cmd_splt[0]=='isMastered':  # If isMastered
                         if cmd_splt[1] == "false": self.isMastered = (False, last_read_time)
                         elif cmd_splt[1] == "true": self.isMastered = (True, last_read_time)
 
                     if len(pack) and cmd_splt[0] == 'OperationMode':  # If OperationMode
                         self.OperationMode = (cmd_splt[1], last_read_time)
-                    
+
                     if len(pack) and cmd_splt[0]=='JointAcceleration':  # If it's JointAcceleration
                         self.JointAcceleration = (float(cmd_splt[1]), last_read_time)
-                    
+
                     if len(pack) and cmd_splt[0]=='JointVelocity':  # If it's JointVelocity
                         self.JointVelocity = (float(cmd_splt[1]), last_read_time)
-                    
+
                     if len(pack) and cmd_splt[0]=='JointJerk':  # If it's JointJerk
                         self.JointJerk = (float(cmd_splt[1]), last_read_time)
-                    
+
 
                     if ( all(item != None for item in self.JointPosition[0]) and
                          all(item != None for item in self.ToolPosition[0]) and
